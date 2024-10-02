@@ -9,5 +9,10 @@ public class UserService {
     @Async
     public void asyncMethodTest() {
         System.out.println("inside asyncMethodTest: " + Thread.currentThread().getName());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
