@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-    @Async
+    @Async("myThreadPoolExecutor")
     public void asyncMethodTest() {
         System.out.println("inside asyncMethodTest: " + Thread.currentThread().getName());
     }
