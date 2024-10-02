@@ -2,14 +2,16 @@ package com.async.spring_boot_async.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 @EnableAsync
-public class AppConfig {
+public class AppConfig implements AsyncConfigurer {
 
 
     @Bean(name = "myThreadPoolExecutor")
@@ -19,13 +21,20 @@ public class AppConfig {
         int maxPoolSize = 4;
         int queueSize = 3;
 
-        ThreadPoolTaskExecutor poolTaskExecutor = new ThreadPoolTaskExecutor();
-        poolTaskExecutor.setCorePoolSize(minPoolSize);
-        poolTaskExecutor.setMaxPoolSize(maxPoolSize);
-        poolTaskExecutor.setQueueCapacity(queueSize);
-        poolTaskExecutor.setThreadNamePrefix("myThread-");
-        poolTaskExecutor.initialize();
+        ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(minPoolSize, maxPoolSize, 1, TimeUnit.HOURS,
+                new ArrayBlockingQueue<>(queueSize), new CustomThreadFactory());
 
-        return poolTaskExecutor;
+        return poolExecutor;
+    }
+
+    private class CustomThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNo = new AtomicInteger(1);
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setName("myThread-" + threadNo.getAndIncrement());
+            return thread;
+        }
     }
 }
